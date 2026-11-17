@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ELEVORA — Rise Beyond Potential | Verified Proof of Work</title>
+  <meta name="description" content="Elevora turns real work into a verified record that candidates can showcase and recruiters can trust. Role roadmaps, live skill checks, AI coaching, and living Proof Cards." />
+
+  <!-- Google Fonts: Inter & Sora -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            elevora: {
+              midnight: '#0B0B14',
+              surface: '#121224',
+              card: 'rgba(21, 21, 40, 0.72)',
+              violet: '#7C5CFF',
+              cyan: '#22D3EE',
+              magenta: '#E879F9',
+            },
+            proof: {
+              bronze: '#CD7F32',
+              silver: '#94A3B8',
+              gold: '#F59E0B',
+              platinum: '#38BDF8',
+              diamond: '#C084FC',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Sora', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 & Babel Standalone CDNs -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg-[#0B0B14] text-white">
+  <div id="root"></div>
+
+  <!-- Main React App Script (JSX transpiled by Babel) -->
+  <script type="text/babel" src="app.js"></script>
+</body>
+</html>
