@@ -1,0 +1,181 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// User model: Candidate, Recruiter, Admin
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String
+  username     String        @unique
+  avatar       String?
+  headline     String?
+  bio          String?
+  role         String        @default("CANDIDATE") // CANDIDATE, RECRUITER, ADMIN
+  location     String?
+  githubUrl    String?
+  linkedinUrl  String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  proofCard    ProofCard?
+  projects     Project[]
+  skillChecks  SkillCheck[]
+  activities   Activity[]
+  applications Application[]
+  shortlists   RecruiterShortlist[] @relation("RecruiterShortlist")
+  savedBy      RecruiterShortlist[] @relation("CandidateSaved")
+}
+
+// Living Proof Card
+model ProofCard {
+  id                String          @id @default(cuid())
+  userId            String          @unique
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug              String          @unique
+  title             String
+  overallLevel      String          @default("Gold") // Bronze, Silver, Gold, Platinum, Diamond
+  levelScore        Int             @default(84)
+  verifiedHash      String          // e.g. SHA-256 verifiable hash
+  qrCodeUrl         String?
+  viewsCount        Int             @default(0)
+  endorsementsCount Int             @default(0)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  verifiedSkills    VerifiedSkill[]
+}
+
+// Verified Skills feeding into Proof Card
+model VerifiedSkill {
+  id           String     @id @default(cuid())
+  proofCardId  String
+  proofCard    ProofCard  @relation(fields: [proofCardId], references: [id], onDelete: Cascade)
+  name         String
+  category     String     // Frontend, Backend, AI / ML, DevOps, System Design
+  level        String     // Bronze, Silver, Gold, Platinum, Diamond
+  score        Int        // 0 - 100
+  verifiedAt   DateTime   @default(now())
+  assessorType String     @default("LIVE_CODE_CHECK") // AI_CHECK, LIVE_PROJECT, SYSTEM_AUDIT
+  evidenceUrl  String?
+}
+
+// Roadmaps (e.g., Full-Stack AI Engineer, DevOps Cloud Architect)
+model Roadmap {
+  id             String        @id @default(cuid())
+  title          String
+  slug           String        @unique
+  description    String
+  category       String
+  roleTarget     String
+  estimatedWeeks Int           @default(8)
+  icon           String?
+  createdAt      DateTime      @default(now())
+
+  steps          RoadmapStep[]
+}
+
+// Steps in a Roadmap (locked, unlocked, completed)
+model RoadmapStep {
+  id          String    @id @default(cuid())
+  roadmapId   String
+  roadmap     Roadmap   @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  order       Int
+  title       String
+  description String
+  type        String    // LESSON, SKILL_CHECK, PROJECT, AUDIT
+  status      String    @default("LOCKED") // LOCKED, UNLOCKED, IN_PROGRESS, COMPLETED
+  points      Int       @default(100)
+
+  projects    Project[]
+}
+
+// Real-world Projects shipped
+model Project {
+  id            String       @id @default(cuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stepId        String?
+  step          RoadmapStep? @relation(fields: [stepId], references: [id])
+  title         String
+  description   String
+  repoUrl       String?
+  liveUrl       String?
+  techStack     String       // JSON string or comma-separated
+  status        String       @default("IN_PROGRESS") // IN_PROGRESS, SUBMITTED, VERIFIED
+  aiReviewScore Int?
+  aiFeedback    String?
+  verifiedAt    DateTime?
+  createdAt     DateTime     @default(now())
+}
+
+// Live Skill Checks passed
+model SkillCheck {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skillName      String
+  score          Int
+  passed         Boolean  @default(true)
+  durationSec    Int      @default(1200)
+  totalQuestions Int      @default(15)
+  breakdownJson  String?  // JSON with topic breakdowns
+  completedAt    DateTime @default(now())
+}
+
+// Candidate Activity feed (heatmap & timeline)
+model Activity {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        String   // PASSED_SKILL_CHECK, SHIPPED_PROJECT, LEVELED_UP, BADGE_EARNED
+  title       String
+  description String
+  timestamp   DateTime @default(now())
+}
+
+// Jobs for direct matching
+model Job {
+  id               String        @id @default(cuid())
+  title            String
+  company          String
+  companyLogo      String?
+  location         String
+  type             String        @default("Remote") // Remote, Hybrid, Onsite
+  salary           String
+  minLevelRequired String        @default("Gold")
+  skillsRequired   String        // comma-separated
+  description      String
+  featured         Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+
+  applications     Application[]
+}
+
+// Job Applications
+model Application {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  status    String   @default("MATCHED") // MATCHED, APPLIED, INTERVIEWING, OFFER
+  appliedAt DateTime @default(now())
+}
+
+// Recruiter Shortlists
+model RecruiterShortlist {
+  id          String   @id @default(cuid())
+  recruiterId String
+  recruiter   User     @relation("RecruiterShortlist", fields: [recruiterId], references: [id], onDelete: Cascade)
+  candidateId String
+  candidate   User     @relation("CandidateSaved", fields: [candidateId], references: [id], onDelete: Cascade)
+  notes       String?
+  tag         String?  // Top Choice, Interview Ready, High Match
+  createdAt   DateTime @default(now())
+}
